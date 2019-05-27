@@ -39,6 +39,7 @@ import com.google.android.gms.vision.face.FaceDetector;
 
 import java.io.IOException;
 
+
 /**
  * Activity for the face tracker app.  This app detects faces with the rear facing camera, and draws
  * overlay graphics to indicate the position, size, and ID of each face.
@@ -56,8 +57,13 @@ public final class FaceTrackerActivity extends AppCompatActivity {
     private static final int RC_HANDLE_CAMERA_PERM = 2;
 
     private static float EYE_THRESHOLD = 0.6f;
-    private static int DROWSINESS_DURATION = 50;
-    private static int DROWSINESS_COUNTER = 0;
+
+    private static long DROWSINESS_THRESHOLD_SECONDS = 3;
+
+    public static boolean CURRENT_DROWSINESS_STATUS;
+    public  static long NORMAL_BEGINS_AT;
+    public static long SLEEPING_BEGINS_AT;
+
     //==============================================================================================
     // Activity Methods
     //==============================================================================================
@@ -70,8 +76,8 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         super.onCreate(icicle);
         setContentView(R.layout.activity_main);
 
-        mPreview = (CameraSourcePreview) findViewById(R.id.preview);
-        mGraphicOverlay = (GraphicOverlay) findViewById(R.id.faceOverlay);
+        mPreview = findViewById(R.id.preview);
+        mGraphicOverlay = findViewById(R.id.faceOverlay);
 
         // Check for the camera permission before accessing the camera.  If the
         // permission is not granted yet, request permission.
@@ -81,6 +87,10 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         } else {
             requestCameraPermission();
         }
+
+        CURRENT_DROWSINESS_STATUS = false;
+        NORMAL_BEGINS_AT = System.currentTimeMillis();
+
     }
 
     /**
@@ -274,8 +284,12 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         }
     }
 
-    public static float drowsinessProbability(){
-        return (float) DROWSINESS_COUNTER/DROWSINESS_DURATION;
+    public static boolean isSleeping(){
+        if((System.currentTimeMillis() - FaceTrackerActivity.SLEEPING_BEGINS_AT)/1000 >= DROWSINESS_THRESHOLD_SECONDS){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     /**
@@ -309,10 +323,27 @@ public final class FaceTrackerActivity extends AppCompatActivity {
 
 
             if (face.getIsLeftEyeOpenProbability() > EYE_THRESHOLD || face.getIsRightEyeOpenProbability() > EYE_THRESHOLD) {
-                DROWSINESS_COUNTER = 0;
+
+
+                if(CURRENT_DROWSINESS_STATUS){
+                    NORMAL_BEGINS_AT = System.currentTimeMillis();
+                }else{
+                    SLEEPING_BEGINS_AT = System.currentTimeMillis();
+                }
+                CURRENT_DROWSINESS_STATUS = false;
             }else{
-                DROWSINESS_COUNTER++;
+                if(!CURRENT_DROWSINESS_STATUS){
+                    SLEEPING_BEGINS_AT = System.currentTimeMillis();
+                }else{
+                    NORMAL_BEGINS_AT = System.currentTimeMillis();
+                }
+
+                CURRENT_DROWSINESS_STATUS = true;
+                //
+
+
             }
+
         }
 
         /**
@@ -334,5 +365,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         public void onDone() {
             mOverlay.remove(mFaceGraphic);
         }
+
+
     }
 }
