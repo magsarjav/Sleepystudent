@@ -92,6 +92,7 @@ class FaceGraphic extends GraphicOverlay.Graphic {
     public void draw(Canvas canvas) {
         Face face = mFace;
         if (face == null) {
+
             return;
         }
 
@@ -99,19 +100,17 @@ class FaceGraphic extends GraphicOverlay.Graphic {
         float x = translateX(face.getPosition().x + face.getWidth() / 2);
         float y = translateY(face.getPosition().y + face.getHeight() / 2);
         canvas.drawCircle(x, y, FACE_POSITION_RADIUS, mFacePositionPaint);
-        //canvas.drawText("id: " + mFaceId, x + ID_X_OFFSET, y + ID_Y_OFFSET, mIdPaint);
+        canvas.drawText("id: " + mFaceId, x + ID_X_OFFSET, y + ID_Y_OFFSET, mIdPaint);
         //canvas.drawText("happiness: " + String.format("%.2f", face.getIsSmilingProbability()), x - ID_X_OFFSET, y - ID_Y_OFFSET, mIdPaint);
         canvas.drawText("left eye: " + String.format("%.2f", face.getIsLeftEyeOpenProbability()), x + ID_X_OFFSET * 2, y + ID_Y_OFFSET * 2, mIdPaint);
         canvas.drawText("right eye: " + String.format("%.2f", face.getIsRightEyeOpenProbability()), x + ID_X_OFFSET * 2, y + ID_Y_OFFSET * 3, mIdPaint);
 
 
         //canvas.drawText("normal time: " + String.format("%.2f", (System.currentTimeMillis() - FaceTrackerActivity.NORMAL_BEGINS_AT) / 1000.0) + "s", x + ID_X_OFFSET * 2, y + ID_Y_OFFSET * 4, mIdPaint);
-        canvas.drawText("Drowsiness status: " + FaceTrackerActivity.CURRENT_DROWSINESS_STATUS, x + ID_X_OFFSET * 2, y + ID_Y_OFFSET * 4, mIdPaint);
-        canvas.drawText("Sleeping time: " + String.format("%.2f", (System.currentTimeMillis() - FaceTrackerActivity.SLEEPING_BEGINS_AT) / 1000.0) + "s", x + ID_X_OFFSET * 2, y + ID_Y_OFFSET * 5, mIdPaint);
+        canvas.drawText("Eye closeness: " + FaceTrackerActivity.CURRENT_DROWSINESS_STATUS, x + ID_X_OFFSET * 2, y + ID_Y_OFFSET * 4, mIdPaint);
+        canvas.drawText("Drowsiness: " + FaceTrackerActivity.isSleeping(), x + ID_X_OFFSET * 2, y + ID_Y_OFFSET * 5, mIdPaint);
+        canvas.drawText("Sleeping time: " + String.format("%.2f", (System.currentTimeMillis() - FaceTrackerActivity.SLEEPING_BEGINS_AT) / 1000.0) + "s", x + ID_X_OFFSET * 2, y + ID_Y_OFFSET * 6, mIdPaint);
 
-        if (FaceTrackerActivity.isSleeping()) {
-            canvas.drawText("WAKE UP !!!", x + ID_X_OFFSET * 2, y + ID_Y_OFFSET * 6, mIdPaint);
-        }
 
         // Draws a bounding box around the face.1`
         float xOffset = scaleX(face.getWidth() / 2.0f);

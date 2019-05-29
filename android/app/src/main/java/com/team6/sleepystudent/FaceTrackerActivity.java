@@ -25,9 +25,12 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -61,9 +64,11 @@ public final class FaceTrackerActivity extends AppCompatActivity {
     private static long DROWSINESS_THRESHOLD_SECONDS = 3;
 
     public static boolean CURRENT_DROWSINESS_STATUS;
-    public  static long NORMAL_BEGINS_AT;
+    public static long NORMAL_BEGINS_AT;
     public static long SLEEPING_BEGINS_AT;
 
+
+    TextView drowsyStatus;
     //==============================================================================================
     // Activity Methods
     //==============================================================================================
@@ -74,8 +79,11 @@ public final class FaceTrackerActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
-        setContentView(R.layout.activity_main);
-
+        setContentView(R.layout.activity_facetracker);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.hide();
+        }
         mPreview = findViewById(R.id.preview);
         mGraphicOverlay = findViewById(R.id.faceOverlay);
 
@@ -91,6 +99,8 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         CURRENT_DROWSINESS_STATUS = false;
         NORMAL_BEGINS_AT = System.currentTimeMillis();
 
+        drowsyStatus = findViewById(R.id.drowsyStatus);
+        drowsyStatus.setText("NO FACE");
     }
 
     /**
@@ -135,6 +145,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         Context context = getApplicationContext();
         FaceDetector detector = new FaceDetector.Builder(context)
                 .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
+                .setProminentFaceOnly(true)
                 .build();
 
         detector.setProcessor(
@@ -153,10 +164,11 @@ public final class FaceTrackerActivity extends AppCompatActivity {
             Log.w(TAG, "Face detector dependencies are not yet available.");
         }
 
+
         mCameraSource = new CameraSource.Builder(context, detector)
                 .setRequestedPreviewSize(640, 480)
                 .setFacing(CameraSource.CAMERA_FACING_FRONT)
-                .setRequestedFps(30.0f)
+                .setRequestedFps(20.0f)
                 .build();
     }
 
@@ -284,10 +296,10 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         }
     }
 
-    public static boolean isSleeping(){
-        if((System.currentTimeMillis() - FaceTrackerActivity.SLEEPING_BEGINS_AT)/1000 >= DROWSINESS_THRESHOLD_SECONDS){
+    public static boolean isSleeping() {
+        if ((System.currentTimeMillis() - FaceTrackerActivity.SLEEPING_BEGINS_AT) / 1000 >= DROWSINESS_THRESHOLD_SECONDS) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
@@ -321,28 +333,32 @@ public final class FaceTrackerActivity extends AppCompatActivity {
             mOverlay.add(mFaceGraphic);
             mFaceGraphic.updateFace(face);
 
-
             if (face.getIsLeftEyeOpenProbability() > EYE_THRESHOLD || face.getIsRightEyeOpenProbability() > EYE_THRESHOLD) {
 
 
-                if(CURRENT_DROWSINESS_STATUS){
+                if (CURRENT_DROWSINESS_STATUS) {
                     NORMAL_BEGINS_AT = System.currentTimeMillis();
-                }else{
+                } else {
                     SLEEPING_BEGINS_AT = System.currentTimeMillis();
                 }
                 CURRENT_DROWSINESS_STATUS = false;
-            }else{
-                if(!CURRENT_DROWSINESS_STATUS){
+            } else {
+                if (!CURRENT_DROWSINESS_STATUS) {
                     SLEEPING_BEGINS_AT = System.currentTimeMillis();
-                }else{
+                } else {
                     NORMAL_BEGINS_AT = System.currentTimeMillis();
                 }
-
                 CURRENT_DROWSINESS_STATUS = true;
-                //
-
-
             }
+
+            if (isSleeping()) {
+                drowsyStatus.setText("WAKEUP");
+            } else {
+                drowsyStatus.setText("NORMAL");
+            }
+
+
+
 
         }
 
@@ -354,6 +370,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         @Override
         public void onMissing(FaceDetector.Detections<Face> detectionResults) {
             mOverlay.remove(mFaceGraphic);
+            drowsyStatus.setText("NO FACE");
         }
 
 

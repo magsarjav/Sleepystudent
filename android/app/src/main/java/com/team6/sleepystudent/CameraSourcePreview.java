@@ -15,9 +15,13 @@
  */
 package com.team6.sleepystudent;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.support.v4.app.ActivityCompat;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -82,7 +86,7 @@ public class CameraSourcePreview extends ViewGroup {
     }
 
     private void startIfReady() throws IOException {
-        if (mStartRequested && mSurfaceAvailable) {
+        if (mStartRequested && mSurfaceAvailable && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             mCameraSource.start(mSurfaceView.getHolder());
 
             if (mOverlay != null) {
@@ -127,6 +131,7 @@ public class CameraSourcePreview extends ViewGroup {
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         int width = 320;
         int height = 240;
+
         if (mCameraSource != null) {
             Size size = mCameraSource.getPreviewSize();
             if (size != null) {
