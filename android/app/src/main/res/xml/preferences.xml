@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <android.support.v7.preference.SwitchPreferenceCompat
+        android:defaultValue="true"
+        android:key="switch_vibrating"
+        android:title="Vibrating"
+        android:icon = "@drawable/ic_vibrate_light"
+        android:summary="Turn on and off vibrating"/>
+    <android.support.v7.preference.SwitchPreferenceCompat
+        android:defaultValue="true"
+        android:key="switch_flickering"
+        android:icon = "@drawable/ic_tvscreen_light"
+        android:title="Screen flickering" />
+    <android.support.v7.preference.SwitchPreferenceCompat
+        android:defaultValue="true"
+        android:icon = "@drawable/ic_music_light"
+        android:key="switch_sound"
+        android:title="Make sound" />
+    <android.support.v7.preference.SwitchPreferenceCompat
+        android:defaultValue="false"
+        android:icon = "@drawable/ic_aspectratio_light"
+        android:key="switch_camera"
+        android:title="Camera overlay"
+        android:summary="Turning on shows your face by front camera"/>
+
+    <android.support.v7.preference.SwitchPreferenceCompat
+        android:defaultValue="false"
+        android:key="switch_debug"
+        android:icon = "@drawable/ic_devmode_light"
+        android:dependency="switch_camera"
+        android:title="Debug mode"
+        android:summary="Turning on shows face tracking, eyes closeness and drowsiness metrics"
+      />
+</PreferenceScreen>

@@ -6,7 +6,8 @@
     <dist:module dist:instant="true" />
 
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE"/>
 
     <application
         android:allowBackup="true"
@@ -15,19 +16,26 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".SettingsActivity"
+            android:label="Settings"
+            android:parentActivityName=".FaceTrackerActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".FaceTrackerActivity"/>
+        </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".FaceTrackerActivity"
             android:configChanges="orientation|keyboardHidden|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".FaceTrackerActivity"
-            android:parentActivityName=".MainActivity">
-        </activity>
 
     </application>
+    <supports-screens android:largeScreens="true"
+        android:normalScreens="true"
+        android:smallScreens="true" android:xlargeScreens="true"/>
 </manifest>

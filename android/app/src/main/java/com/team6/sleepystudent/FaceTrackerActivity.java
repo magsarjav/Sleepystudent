@@ -21,8 +21,14 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
@@ -86,23 +92,54 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         }
         mPreview = findViewById(R.id.preview);
         mGraphicOverlay = findViewById(R.id.faceOverlay);
+        drowsyStatus = findViewById(R.id.drowsyStatus);
+        android.support.v7.preference.PreferenceManager
+                .setDefaultValues(this, R.xml.preferences, false);
 
         // Check for the camera permission before accessing the camera.  If the
         // permission is not granted yet, request permission.
         int rc = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
         if (rc == PackageManager.PERMISSION_GRANTED) {
             createCameraSource();
+            refreshCameraSettings(getBaseContext());
         } else {
             requestCameraPermission();
         }
 
-        CURRENT_DROWSINESS_STATUS = false;
-        NORMAL_BEGINS_AT = System.currentTimeMillis();
+        FloatingActionButton settingsButton = findViewById(R.id.btn_settings);
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(view.getContext(), SettingsActivity.class);
+                startActivity(intent);
+            }
+        });
 
-        drowsyStatus = findViewById(R.id.drowsyStatus);
-        drowsyStatus.setText("NO FACE");
     }
 
+    private void refreshCameraSettings(Context context){
+        SharedPreferences sharedPref = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(context);
+        Boolean viewCamera = sharedPref.getBoolean
+                ("switch_camera", false);
+        Boolean debugMode = sharedPref.getBoolean
+                ("switch_debug", false);
+
+        if(viewCamera){
+            mPreview.setVisibility(View.VISIBLE);
+            if(debugMode){
+                mGraphicOverlay.setVisibility(View.VISIBLE);
+            }else{
+                mGraphicOverlay.setVisibility(View.GONE);
+            }
+        }else{
+            mPreview.setVisibility(View.INVISIBLE);
+            mGraphicOverlay.setVisibility(View.GONE);
+        }
+
+        CURRENT_DROWSINESS_STATUS = false;
+        NORMAL_BEGINS_AT = System.currentTimeMillis();
+        drowsyStatus.setText("No face");
+    }
     /**
      * Handles the requesting of the camera permission.  This includes
      * showing a "Snackbar" message of why the permission is needed then
@@ -170,6 +207,10 @@ public final class FaceTrackerActivity extends AppCompatActivity {
                 .setFacing(CameraSource.CAMERA_FACING_FRONT)
                 .setRequestedFps(20.0f)
                 .build();
+
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        Log.i("disp", metrics.heightPixels + " " + metrics.widthPixels);
     }
 
     /**
@@ -178,8 +219,8 @@ public final class FaceTrackerActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
         startCameraSource();
+        refreshCameraSettings(this);
     }
 
     /**
@@ -189,6 +230,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         mPreview.stop();
+
     }
 
     /**
@@ -201,6 +243,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         if (mCameraSource != null) {
             mCameraSource.release();
         }
+
     }
 
     /**
@@ -352,12 +395,25 @@ public final class FaceTrackerActivity extends AppCompatActivity {
             }
 
             if (isSleeping()) {
-                drowsyStatus.setText("WAKEUP");
+                drowsyStatus.setText("Wake up");
+
+                SharedPreferences sharedPref = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+                Boolean vibrating = sharedPref.getBoolean
+                        ("switch_vibrating", false);
+                if(vibrating){
+                    Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                    // Vibrate for 500 milliseconds
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                        v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+                    else {
+                        //deprecated in API 26
+                        v.vibrate(500);
+                    }
+                }
+
             } else {
-                drowsyStatus.setText("NORMAL");
+                drowsyStatus.setText("Tracking");
             }
-
-
 
 
         }
@@ -370,7 +426,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         @Override
         public void onMissing(FaceDetector.Detections<Face> detectionResults) {
             mOverlay.remove(mFaceGraphic);
-            drowsyStatus.setText("NO FACE");
+            drowsyStatus.setText("No face");
         }
 
 
