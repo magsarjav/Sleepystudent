@@ -65,9 +65,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
     // permission request codes need to be < 256
     private static final int RC_HANDLE_CAMERA_PERM = 2;
 
-    private static float EYE_THRESHOLD = 0.6f;
-
-    private static long DROWSINESS_THRESHOLD_SECONDS = 3;
+    private static final long DROWSINESS_THRESHOLD_SECONDS = 3;
 
     public static boolean CURRENT_DROWSINESS_STATUS;
     public static long NORMAL_BEGINS_AT;
@@ -119,9 +117,9 @@ public final class FaceTrackerActivity extends AppCompatActivity {
 
     private void refreshCameraSettings(Context context){
         SharedPreferences sharedPref = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(context);
-        Boolean viewCamera = sharedPref.getBoolean
+        boolean viewCamera = sharedPref.getBoolean
                 ("switch_camera", false);
-        Boolean debugMode = sharedPref.getBoolean
+        boolean debugMode = sharedPref.getBoolean
                 ("switch_debug", false);
 
         if(viewCamera){
@@ -376,6 +374,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
             mOverlay.add(mFaceGraphic);
             mFaceGraphic.updateFace(face);
 
+            float EYE_THRESHOLD = 0.6f;
             if (face.getIsLeftEyeOpenProbability() > EYE_THRESHOLD || face.getIsRightEyeOpenProbability() > EYE_THRESHOLD) {
 
 
@@ -398,7 +397,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
                 drowsyStatus.setText("Wake up");
 
                 SharedPreferences sharedPref = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-                Boolean vibrating = sharedPref.getBoolean
+                boolean vibrating = sharedPref.getBoolean
                         ("switch_vibrating", false);
                 if(vibrating){
                     Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);

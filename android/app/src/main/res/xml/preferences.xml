@@ -3,33 +3,46 @@
 
     <android.support.v7.preference.SwitchPreferenceCompat
         android:defaultValue="true"
+        android:icon="@drawable/ic_vibrate_light"
         android:key="switch_vibrating"
-        android:title="Vibrating"
-        android:icon = "@drawable/ic_vibrate_light"
-        android:summary="Turn on and off vibrating"/>
+        android:summary="Turn on and off vibrating"
+        android:title="Vibrating" />
     <android.support.v7.preference.SwitchPreferenceCompat
         android:defaultValue="true"
+        android:icon="@drawable/ic_slideshow_light"
         android:key="switch_flickering"
-        android:icon = "@drawable/ic_tvscreen_light"
         android:title="Screen flickering" />
     <android.support.v7.preference.SwitchPreferenceCompat
-        android:defaultValue="true"
-        android:icon = "@drawable/ic_music_light"
+        android:defaultValue="false"
+        android:icon="@drawable/ic_sound_light"
         android:key="switch_sound"
         android:title="Make sound" />
+
     <android.support.v7.preference.SwitchPreferenceCompat
-        android:defaultValue="false"
-        android:icon = "@drawable/ic_aspectratio_light"
-        android:key="switch_camera"
-        android:title="Camera overlay"
-        android:summary="Turning on shows your face by front camera"/>
+        android:defaultValue="true"
+        android:icon="@drawable/ic_mic_light"
+        android:key="switch_recording"
+        android:title="Record audio" />
 
     <android.support.v7.preference.SwitchPreferenceCompat
         android:defaultValue="false"
-        android:key="switch_debug"
-        android:icon = "@drawable/ic_devmode_light"
+        android:icon="@drawable/ic_aspectratio_light"
+        android:key="switch_camera"
+        android:summary="Turning on shows your face by front camera"
+        android:title="Camera overlay" />
+
+    <android.support.v7.preference.SwitchPreferenceCompat
+        android:defaultValue="false"
         android:dependency="switch_camera"
-        android:title="Debug mode"
+        android:icon="@drawable/ic_devmode_light"
+        android:key="switch_debug"
         android:summary="Turning on shows face tracking, eyes closeness and drowsiness metrics"
-      />
+        android:title="Debug mode" />
+    <Preference
+        android:selectable="false"
+        android:icon="@drawable/ic_info_light"
+        android:title="About us"
+        android:summary="Dongkwan Kim, Magsarjav Bataa, Taeyoung Hanh and Woongsup Song" />
+
+
 </PreferenceScreen>
