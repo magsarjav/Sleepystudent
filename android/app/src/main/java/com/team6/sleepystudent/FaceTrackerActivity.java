@@ -24,6 +24,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
@@ -31,11 +32,13 @@ import android.os.Vibrator;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -73,6 +76,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
 
 
     TextView drowsyStatus;
+    ImageView drowsyIcon;
     //==============================================================================================
     // Activity Methods
     //==============================================================================================
@@ -90,7 +94,10 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         }
         mPreview = findViewById(R.id.preview);
         mGraphicOverlay = findViewById(R.id.faceOverlay);
+
         drowsyStatus = findViewById(R.id.drowsyStatus);
+        drowsyIcon = findViewById(R.id.drowsyIcon);
+
         android.support.v7.preference.PreferenceManager
                 .setDefaultValues(this, R.xml.preferences, false);
 
@@ -113,31 +120,36 @@ public final class FaceTrackerActivity extends AppCompatActivity {
             }
         });
 
+
+        changeToNoFace();
     }
 
-    private void refreshCameraSettings(Context context){
+    private void refreshCameraSettings(Context context) {
         SharedPreferences sharedPref = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(context);
         boolean viewCamera = sharedPref.getBoolean
                 ("switch_camera", false);
         boolean debugMode = sharedPref.getBoolean
                 ("switch_debug", false);
 
-        if(viewCamera){
+        if (viewCamera) {
             mPreview.setVisibility(View.VISIBLE);
-            if(debugMode){
+            if (debugMode) {
                 mGraphicOverlay.setVisibility(View.VISIBLE);
-            }else{
+            } else {
                 mGraphicOverlay.setVisibility(View.GONE);
             }
-        }else{
+        } else {
             mPreview.setVisibility(View.INVISIBLE);
             mGraphicOverlay.setVisibility(View.GONE);
         }
 
         CURRENT_DROWSINESS_STATUS = false;
         NORMAL_BEGINS_AT = System.currentTimeMillis();
-        drowsyStatus.setText("No face");
+
+        changeToNoFace();
+
     }
+
     /**
      * Handles the requesting of the camera permission.  This includes
      * showing a "Snackbar" message of why the permission is needed then
@@ -345,6 +357,27 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         }
     }
 
+    public void changeToNoFace() {
+        drowsyStatus.setText("No face");
+        drowsyStatus.setTextColor(ContextCompat.getColor(getBaseContext(), R.color.colorPrimary));
+        drowsyIcon.setImageResource(R.drawable.ic_face_dis_light);
+        drowsyIcon.setColorFilter(ContextCompat.getColor(getBaseContext(), R.color.colorPrimary));
+    }
+
+    public void changeToTrackingFace() {
+        drowsyStatus.setText("Good");
+        drowsyStatus.setTextColor(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
+        drowsyIcon.setImageResource(R.drawable.ic_face_smile_light);
+        drowsyIcon.setColorFilter(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
+    }
+
+    public void changeToWarning() {
+        drowsyStatus.setText("Wake up");
+        drowsyStatus.setTextColor(ContextCompat.getColor(getBaseContext(), R.color.colorRed));
+        drowsyIcon.setImageResource(R.drawable.ic_face_neutral_light);
+        drowsyIcon.setColorFilter(ContextCompat.getColor(getBaseContext(), R.color.colorRed));
+    }
+
     /**
      * Face tracker for each detected individual. This maintains a face graphic within the app's
      * associated face overlay.
@@ -394,12 +427,12 @@ public final class FaceTrackerActivity extends AppCompatActivity {
             }
 
             if (isSleeping()) {
-                drowsyStatus.setText("Wake up");
+                changeToWarning();
 
                 SharedPreferences sharedPref = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getBaseContext());
                 boolean vibrating = sharedPref.getBoolean
                         ("switch_vibrating", false);
-                if(vibrating){
+                if (vibrating) {
                     Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                     // Vibrate for 500 milliseconds
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
@@ -411,7 +444,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
                 }
 
             } else {
-                drowsyStatus.setText("Tracking");
+                changeToTrackingFace();
             }
 
 
@@ -425,7 +458,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         @Override
         public void onMissing(FaceDetector.Detections<Face> detectionResults) {
             mOverlay.remove(mFaceGraphic);
-            drowsyStatus.setText("No face");
+            changeToNoFace();
         }
 
 

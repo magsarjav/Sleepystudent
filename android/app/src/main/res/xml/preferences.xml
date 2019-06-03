@@ -5,19 +5,18 @@
         android:defaultValue="true"
         android:icon="@drawable/ic_vibrate_light"
         android:key="switch_vibrating"
-        android:summary="Turn on and off vibrating"
-        android:title="Vibrating" />
+        android:summary="Turn on and off vibration"
+        android:title="Vibration" />
     <android.support.v7.preference.SwitchPreferenceCompat
         android:defaultValue="true"
         android:icon="@drawable/ic_slideshow_light"
         android:key="switch_flickering"
-        android:title="Screen flickering" />
+        android:title="Screen flicker" />
     <android.support.v7.preference.SwitchPreferenceCompat
         android:defaultValue="false"
         android:icon="@drawable/ic_sound_light"
         android:key="switch_sound"
-        android:title="Make sound" />
-
+        android:title="Make noise" />
     <android.support.v7.preference.SwitchPreferenceCompat
         android:defaultValue="true"
         android:icon="@drawable/ic_mic_light"
