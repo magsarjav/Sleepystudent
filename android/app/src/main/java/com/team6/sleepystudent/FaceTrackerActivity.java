@@ -24,7 +24,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
@@ -68,6 +67,9 @@ public final class FaceTrackerActivity extends AppCompatActivity {
     // permission request codes need to be < 256
     private static final int RC_HANDLE_CAMERA_PERM = 2;
 
+
+    //thresholds for drowsiness detector
+    private static final float EYE_CLOSENESS_THRESHOLD = 0.6f;
     private static final long DROWSINESS_THRESHOLD_SECONDS = 3;
 
     public static boolean CURRENT_DROWSINESS_STATUS;
@@ -407,8 +409,8 @@ public final class FaceTrackerActivity extends AppCompatActivity {
             mOverlay.add(mFaceGraphic);
             mFaceGraphic.updateFace(face);
 
-            float EYE_THRESHOLD = 0.6f;
-            if (face.getIsLeftEyeOpenProbability() > EYE_THRESHOLD || face.getIsRightEyeOpenProbability() > EYE_THRESHOLD) {
+
+            if (face.getIsLeftEyeOpenProbability() > EYE_CLOSENESS_THRESHOLD || face.getIsRightEyeOpenProbability() > EYE_CLOSENESS_THRESHOLD) {
 
 
                 if (CURRENT_DROWSINESS_STATUS) {
