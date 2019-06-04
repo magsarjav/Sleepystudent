@@ -6,4 +6,5 @@
     <color name="colorBg">#212121</color>
     <color name="colorGreen">#41C300</color>
     <color name="colorRed">#FF3D00</color>
+    <color name="colorGray">#BDBDBD</color>
 </resources>

@@ -361,9 +361,9 @@ public final class FaceTrackerActivity extends AppCompatActivity {
 
     public void changeToNoFace() {
         drowsyStatus.setText("No face");
-        drowsyStatus.setTextColor(ContextCompat.getColor(getBaseContext(), R.color.colorPrimary));
+        drowsyStatus.setTextColor(ContextCompat.getColor(getBaseContext(), R.color.colorGray));
         drowsyIcon.setImageResource(R.drawable.ic_face_dis_light);
-        drowsyIcon.setColorFilter(ContextCompat.getColor(getBaseContext(), R.color.colorPrimary));
+        drowsyIcon.setColorFilter(ContextCompat.getColor(getBaseContext(), R.color.colorGray));
     }
 
     public void changeToTrackingFace() {
