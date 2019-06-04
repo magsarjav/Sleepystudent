@@ -2,10 +2,11 @@
 
 Android application for students who feel sleepy or sleep on their lectures
 
-Getting Started
+Introduction
 ---------------
-The samples build using Gradle in Android Studio.  There is no special
-configuration required.
+- Directory 'android' contains Android Studio project of the applciation
+- Directory 'ios' contains iOS code of the applciation
+- File app-demo.apk is up-to-date compiled applciation
 
 
 License
