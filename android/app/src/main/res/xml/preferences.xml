@@ -5,27 +5,28 @@
         android:defaultValue="true"
         android:icon="@drawable/ic_vibrate_light"
         android:key="switch_vibrating"
-        android:summary="Turn on and off vibration"
+
         android:title="Vibration" />
+
     <android.support.v7.preference.SwitchPreferenceCompat
         android:defaultValue="true"
         android:icon="@drawable/ic_slideshow_light"
         android:key="switch_flickering"
-        android:title="Screen flicker"
-        android:summary="Helps to keep "/>
+        android:title="Screen flicker" />
+
     <android.support.v7.preference.SwitchPreferenceCompat
         android:defaultValue="true"
         android:icon="@drawable/ic_mic_light"
         android:key="switch_recording"
         android:title="Record audio"
-        android:summary="Captures lecture audio while sleeping"
+        android:summary="Capture lecture while sleeping"
         />
 
     <android.support.v7.preference.SwitchPreferenceCompat
         android:defaultValue="false"
         android:icon="@drawable/ic_aspectratio_light"
         android:key="switch_camera"
-        android:summary="Turning on shows your face by front camera"
+        android:summary="Front camera view"
         android:title="Camera overlay" />
 
     <android.support.v7.preference.SwitchPreferenceCompat
@@ -33,13 +34,13 @@
         android:dependency="switch_camera"
         android:icon="@drawable/ic_devmode_light"
         android:key="switch_debug"
-        android:summary="Turning on shows face tracking, eyes closeness and drowsiness metrics"
+        android:summary="Face tracking, eyes closeness and drowsiness metrics"
         android:title="Debug mode" />
     <Preference
         android:selectable="false"
         android:icon="@drawable/ic_info_light"
         android:title="About us"
-        android:summary="Dongkwan Kim, Magsarjav Bataa, Taeyoung Hanh and Woongsup Song" />
+        android:summary="Team 6: Dongkwan Kim, Magsarjav Bataa, Taeyoung Hanh and Woongsup Song" />
 
 
 </PreferenceScreen>
