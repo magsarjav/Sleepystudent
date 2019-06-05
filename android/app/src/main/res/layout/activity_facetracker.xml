@@ -54,8 +54,6 @@
                 android:layout_height="40dp"
                 android:gravity="center"
                 android:keepScreenOn="true"
-                android:text="Sleepy student"
-                android:textColor="@color/colorPrimary"
                 android:textSize="30sp"
                 android:textStyle="bold" />
 
