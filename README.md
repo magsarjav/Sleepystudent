@@ -1,6 +1,7 @@
 # Sleepy student
 
-Android application for students who feel sleepy or sleep during their classes or lectures
+A mobile application for students who feel sleepy or sleep during their classes or lectures.
+Google Vision API and ARKit are used for tracking face and head, and extracting features.
 
 Features
 ---------------
@@ -17,4 +18,4 @@ Directory structure
 
 License
 -------
-Copyright (c) by Team 6 of Advanced Mobile Computing class.
+Copyright (c) by Team 6 [Dongkwan Kim, Magsarjav Bataa, Taeyoung Hanh and Woongsup Song] of Advanced Mobile Computing class. 
