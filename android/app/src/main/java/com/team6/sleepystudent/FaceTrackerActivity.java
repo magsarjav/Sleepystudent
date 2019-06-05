@@ -36,6 +36,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -69,8 +70,8 @@ public final class FaceTrackerActivity extends AppCompatActivity {
 
 
     //thresholds for drowsiness detector
-    private static final float EYE_CLOSENESS_THRESHOLD = 0.6f;
-    private static final long DROWSINESS_THRESHOLD_SECONDS = 3;
+    private static final float EYE_CLOSENESS_THRESHOLD = 0.57f;
+    private static final long DROWSINESS_THRESHOLD_SECONDS = 5;
 
     public static boolean CURRENT_DROWSINESS_STATUS;
     public static long NORMAL_BEGINS_AT;

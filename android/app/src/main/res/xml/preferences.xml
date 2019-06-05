@@ -11,17 +11,15 @@
         android:defaultValue="true"
         android:icon="@drawable/ic_slideshow_light"
         android:key="switch_flickering"
-        android:title="Screen flicker" />
-    <android.support.v7.preference.SwitchPreferenceCompat
-        android:defaultValue="false"
-        android:icon="@drawable/ic_sound_light"
-        android:key="switch_sound"
-        android:title="Make noise" />
+        android:title="Screen flicker"
+        android:summary="Helps to keep "/>
     <android.support.v7.preference.SwitchPreferenceCompat
         android:defaultValue="true"
         android:icon="@drawable/ic_mic_light"
         android:key="switch_recording"
-        android:title="Record audio" />
+        android:title="Record audio"
+        android:summary="Captures lecture audio while sleeping"
+        />
 
     <android.support.v7.preference.SwitchPreferenceCompat
         android:defaultValue="false"
