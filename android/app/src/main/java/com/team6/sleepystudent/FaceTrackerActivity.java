@@ -24,6 +24,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
@@ -38,6 +40,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -50,6 +53,7 @@ import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
 
 import java.io.IOException;
+import java.util.Random;
 
 
 /**
@@ -63,6 +67,8 @@ public final class FaceTrackerActivity extends AppCompatActivity {
 
     private CameraSourcePreview mPreview;
     private GraphicOverlay mGraphicOverlay;
+    private FrameLayout toplayout;
+
 
     private static final int RC_HANDLE_GMS = 9001;
     // permission request codes need to be < 256
@@ -99,6 +105,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         }
         mPreview = findViewById(R.id.preview);
         mGraphicOverlay = findViewById(R.id.faceOverlay);
+        toplayout = findViewById(R.id.topLayout);
 
         drowsyStatus = findViewById(R.id.drowsyStatus);
         drowsyIcon = findViewById(R.id.drowsyIcon);
@@ -382,6 +389,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         drowsyStatus.setTextColor(ContextCompat.getColor(getBaseContext(), R.color.colorGray));
         drowsyIcon.setImageResource(R.drawable.ic_face_dis_light);
         drowsyIcon.setColorFilter(ContextCompat.getColor(getBaseContext(), R.color.colorGray));
+        toplayout.setForeground(null);
     }
 
     //Shows status when face is detected
@@ -390,6 +398,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         drowsyStatus.setTextColor(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
         drowsyIcon.setImageResource(R.drawable.ic_face_smile_light);
         drowsyIcon.setColorFilter(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
+        toplayout.setForeground(null);
     }
 
     //Shows status when drowsiness is detected
@@ -413,6 +422,21 @@ public final class FaceTrackerActivity extends AppCompatActivity {
                 v.vibrate(500);
             }
         }
+
+        Log.i("runUIThread", "Start flickering");
+
+        //iswake=false;
+
+        int randomnumber = new Random().nextInt(3) + 1;
+        int c = R.color.colorRed;
+        if (randomnumber == 1) {
+            c = R.color.colorGreen;
+        }else if(randomnumber == 2){
+            c = R.color.colorWhite;
+        }
+        toplayout.setForeground(new ColorDrawable(ContextCompat.getColor(getBaseContext(),c)));
+
+
     }
 
     //Shows status when sleeping is detected
@@ -471,16 +495,15 @@ public final class FaceTrackerActivity extends AppCompatActivity {
                 CURRENT_DROWSINESS_STATUS = true;
             }
 
-            if(isSleeping()){
+            if (isSleeping()) {
                 changeToSleeping();
-            }else{
+            } else {
                 if (isDrowsy()) {
                     changeToWarning();
                 } else {
                     changeToTrackingFace();
                 }
             }
-
 
 
         }
