@@ -303,7 +303,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         };
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Face Tracker sample")
+        builder.setTitle("Sleepy student")
                 .setMessage(R.string.no_camera_permission)
                 .setPositiveButton(R.string.ok, listener)
                 .show();
@@ -375,6 +375,8 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         }
     }
 
+
+    //Shows status when no face is detected
     public void changeToNoFace() {
         drowsyStatus.setText("No face");
         drowsyStatus.setTextColor(ContextCompat.getColor(getBaseContext(), R.color.colorGray));
@@ -382,6 +384,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         drowsyIcon.setColorFilter(ContextCompat.getColor(getBaseContext(), R.color.colorGray));
     }
 
+    //Shows status when face is detected
     public void changeToTrackingFace() {
         drowsyStatus.setText("Good");
         drowsyStatus.setTextColor(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
@@ -389,6 +392,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         drowsyIcon.setColorFilter(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
     }
 
+    //Shows status when drowsiness is detected
     public void changeToWarning() {
         drowsyStatus.setText("Wake up");
         drowsyStatus.setTextColor(ContextCompat.getColor(getBaseContext(), R.color.colorRed));
@@ -411,6 +415,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         }
     }
 
+    //Shows status when sleeping is detected
     public void changeToSleeping() {
         drowsyStatus.setText("Recording");
         drowsyStatus.setTextColor(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
