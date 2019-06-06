@@ -72,6 +72,8 @@ public final class FaceTrackerActivity extends AppCompatActivity {
     //thresholds for drowsiness detector
     private static final float EYE_CLOSENESS_THRESHOLD = 0.57f;
     private static final long DROWSINESS_THRESHOLD_SECONDS = 5;
+    private static final long SLEEPING_THRESHOLD_SECONDS = 10;
+
 
     public static boolean CURRENT_DROWSINESS_STATUS;
     public static long NORMAL_BEGINS_AT;
@@ -107,6 +109,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         // Check for the camera permission before accessing the camera.  If the
         // permission is not granted yet, request permission.
         int rc = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+
         if (rc == PackageManager.PERMISSION_GRANTED) {
             createCameraSource();
             refreshCameraSettings(getBaseContext());
@@ -123,7 +126,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
             }
         });
 
-
+        //Initial state of detection
         changeToNoFace();
     }
 
@@ -352,11 +355,23 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         }
     }
 
-    public static boolean isSleeping() {
+    //Check current drowsy status
+    public static boolean isDrowsy() {
         if ((System.currentTimeMillis() - FaceTrackerActivity.SLEEPING_BEGINS_AT) / 1000 >= DROWSINESS_THRESHOLD_SECONDS) {
             return true;
         } else {
             return false;
+
+        }
+    }
+
+    //Check current sleeping status
+    public static boolean isSleeping() {
+        if ((System.currentTimeMillis() - FaceTrackerActivity.SLEEPING_BEGINS_AT) / 1000 >= SLEEPING_THRESHOLD_SECONDS) {
+            return true;
+        } else {
+            return false;
+
         }
     }
 
@@ -379,6 +394,28 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         drowsyStatus.setTextColor(ContextCompat.getColor(getBaseContext(), R.color.colorRed));
         drowsyIcon.setImageResource(R.drawable.ic_face_neutral_light);
         drowsyIcon.setColorFilter(ContextCompat.getColor(getBaseContext(), R.color.colorRed));
+
+
+        SharedPreferences sharedPref = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        boolean vibrating = sharedPref.getBoolean
+                ("switch_vibrating", false);
+        if (vibrating) {
+            Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+            // Vibrate for 500 milliseconds
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+            else {
+                //deprecated in API 26
+                v.vibrate(500);
+            }
+        }
+    }
+
+    public void changeToSleeping() {
+        drowsyStatus.setText("Recording");
+        drowsyStatus.setTextColor(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
+        drowsyIcon.setImageResource(R.drawable.ic_mic_light);
+        drowsyIcon.setColorFilter(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
     }
 
     /**
@@ -429,26 +466,16 @@ public final class FaceTrackerActivity extends AppCompatActivity {
                 CURRENT_DROWSINESS_STATUS = true;
             }
 
-            if (isSleeping()) {
-                changeToWarning();
-
-                SharedPreferences sharedPref = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-                boolean vibrating = sharedPref.getBoolean
-                        ("switch_vibrating", false);
-                if (vibrating) {
-                    Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-                    // Vibrate for 500 milliseconds
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                        v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
-                    else {
-                        //deprecated in API 26
-                        v.vibrate(500);
-                    }
+            if(isSleeping()){
+                changeToSleeping();
+            }else{
+                if (isDrowsy()) {
+                    changeToWarning();
+                } else {
+                    changeToTrackingFace();
                 }
-
-            } else {
-                changeToTrackingFace();
             }
+
 
 
         }
