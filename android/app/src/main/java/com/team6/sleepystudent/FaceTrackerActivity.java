@@ -26,10 +26,15 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.media.AudioFormat;
+import android.media.AudioRecord;
+import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -40,6 +45,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -53,6 +59,8 @@ import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Random;
 
 
@@ -85,7 +93,8 @@ public final class FaceTrackerActivity extends AppCompatActivity {
     public static long NORMAL_BEGINS_AT;
     public static long SLEEPING_BEGINS_AT;
 
-
+    MediaRecorder recorder;
+    boolean isRecording;
     TextView drowsyStatus;
     ImageView drowsyIcon;
     //==============================================================================================
@@ -110,6 +119,9 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         drowsyStatus = findViewById(R.id.drowsyStatus);
         drowsyIcon = findViewById(R.id.drowsyIcon);
 
+
+        isRecording = false;
+
         android.support.v7.preference.PreferenceManager
                 .setDefaultValues(this, R.xml.preferences, false);
 
@@ -130,6 +142,19 @@ public final class FaceTrackerActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(view.getContext(), SettingsActivity.class);
                 startActivity(intent);
+            }
+        });
+
+        FloatingActionButton stopAudioButton = findViewById(R.id.btn_stop_audio);
+        findViewById(R.id.btn_stop_audio).setVisibility(View.INVISIBLE);
+
+        stopAudioButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                stopRecording();
+                findViewById(R.id.btn_stop_audio).setVisibility(View.INVISIBLE);
+                isRecording = false;
+
             }
         });
 
@@ -431,11 +456,10 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         int c = R.color.colorRed;
         if (randomnumber == 1) {
             c = R.color.colorGreen;
-        }else if(randomnumber == 2){
+        } else if (randomnumber == 2) {
             c = R.color.colorWhite;
         }
-        toplayout.setForeground(new ColorDrawable(ContextCompat.getColor(getBaseContext(),c)));
-
+        toplayout.setForeground(new ColorDrawable(ContextCompat.getColor(getBaseContext(), c)));
 
     }
 
@@ -445,6 +469,24 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         drowsyStatus.setTextColor(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
         drowsyIcon.setImageResource(R.drawable.ic_mic_light);
         drowsyIcon.setColorFilter(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
+        toplayout.setForeground(null);
+        //add record here
+        if (isRecording == false) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            findViewById(R.id.btn_stop_audio).setVisibility(View.VISIBLE);
+                        }
+                    });
+                }
+            }).start();
+
+            startRecording();
+            isRecording = true;
+        }
     }
 
     /**
@@ -531,4 +573,57 @@ public final class FaceTrackerActivity extends AppCompatActivity {
 
 
     }
+
+    private void startRecording() {
+        Log.i("Audio", "audiorecording start");
+        long now = System.currentTimeMillis();
+        Date date = new Date(now);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy년MM월dd일HH시mm분ss초");
+        String getTime = sdf.format(date);
+        String fileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + getTime + ".3gp";
+
+        Log.i("Audio", "audiorecording try filename : " + fileName);
+        /*
+        Thread recordingThread =null;
+
+        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, 8000,AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,1024*2);
+        recorder.startRecording();
+        isRecording = true;
+        recordingThread = new Thread(new Runnable() {
+            public void run() {
+                writeAudioDataToFile();
+            }
+        }, "AudioRecorder Thread");
+        recordingThread.start();
+        */
+
+        recorder = new MediaRecorder();
+        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        recorder.setOutputFile(fileName);
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+
+        try {
+            recorder.prepare();
+        } catch (IOException e) {
+            Log.e("Audio", "prepare() failed");
+        }
+
+        recorder.start();
+
+
+    }
+
+    private void stopRecording() {
+        if (recorder != null) {
+            recorder.stop();
+            recorder.release();
+            recorder = null;
+            Log.i("Audio", "stoprecording done");
+        }
+
+    }
+
+
 }

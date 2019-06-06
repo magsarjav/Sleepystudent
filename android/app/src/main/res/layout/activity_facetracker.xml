@@ -13,22 +13,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:orientation="vertical"
-       >
+        android:orientation="vertical">
 
         <com.team6.sleepystudent.CameraSourcePreview
             android:id="@+id/preview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-           >
+            android:layout_gravity="center">
 
             <com.team6.sleepystudent.GraphicOverlay
                 android:id="@+id/faceOverlay"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                />
+                android:layout_gravity="center" />
 
         </com.team6.sleepystudent.CameraSourcePreview>
     </LinearLayout>
@@ -48,6 +45,7 @@
                 android:layout_width="200dp"
                 android:layout_height="200dp"
                 android:tint="@color/colorPrimary" />
+
             <TextView
                 android:id="@+id/drowsyStatus"
                 android:layout_width="match_parent"
@@ -62,7 +60,8 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        >
 
         <LinearLayout
             android:id="@+id/fullscreen_content_controls"
@@ -85,5 +84,22 @@
 
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center|bottom"
+
+            android:orientation="horizontal"
+            tools:ignore="UselessParent">
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/btn_stop_audio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_margin="16dp"
+                app:srcCompat="@drawable/ic_stop_light" />
+
+        </LinearLayout>
     </FrameLayout>
 </FrameLayout>
