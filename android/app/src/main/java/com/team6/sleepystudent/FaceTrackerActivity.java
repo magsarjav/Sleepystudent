@@ -58,6 +58,7 @@ import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -75,12 +76,11 @@ public final class FaceTrackerActivity extends AppCompatActivity {
 
     private CameraSourcePreview mPreview;
     private GraphicOverlay mGraphicOverlay;
-    private FrameLayout toplayout;
 
 
     private static final int RC_HANDLE_GMS = 9001;
     // permission request codes need to be < 256
-    private static final int RC_HANDLE_CAMERA_PERM = 2;
+    private static final int PERMISSION_ALL = 1;
 
 
     //thresholds for drowsiness detector
@@ -92,11 +92,13 @@ public final class FaceTrackerActivity extends AppCompatActivity {
     public static boolean CURRENT_DROWSINESS_STATUS;
     public static long NORMAL_BEGINS_AT;
     public static long SLEEPING_BEGINS_AT;
+    private static boolean isRecording;
+    public static String RECORDED_AUDIO_FILE;
 
-    MediaRecorder recorder;
-    boolean isRecording;
-    TextView drowsyStatus;
-    ImageView drowsyIcon;
+    private MediaRecorder recorder;
+
+    private TextView drowsyStatus;
+    private ImageView drowsyIcon;
     //==============================================================================================
     // Activity Methods
     //==============================================================================================
@@ -114,27 +116,53 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         }
         mPreview = findViewById(R.id.preview);
         mGraphicOverlay = findViewById(R.id.faceOverlay);
-        toplayout = findViewById(R.id.topLayout);
+
 
         drowsyStatus = findViewById(R.id.drowsyStatus);
         drowsyIcon = findViewById(R.id.drowsyIcon);
 
-
-        isRecording = false;
 
         android.support.v7.preference.PreferenceManager
                 .setDefaultValues(this, R.xml.preferences, false);
 
         // Check for the camera permission before accessing the camera.  If the
         // permission is not granted yet, request permission.
-        int rc = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+        String[] PERMISSIONS = {
+                Manifest.permission.CAMERA,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.VIBRATE
+        };
 
-        if (rc == PackageManager.PERMISSION_GRANTED) {
-            createCameraSource();
-            refreshCameraSettings(getBaseContext());
-        } else {
-            requestCameraPermission();
+        if (!hasPermissions(this, PERMISSIONS)) {
+            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
         }
+
+        createCameraSource();
+        refreshCameraSettings(getBaseContext());
+
+        isRecording = false;
+        FloatingActionButton stopAudioButton = findViewById(R.id.btn_stop_audio);
+        findViewById(R.id.btn_stop_audio).setVisibility(View.INVISIBLE);
+        stopAudioButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                stopRecording();
+                isRecording = false;
+                findViewById(R.id.btn_stop_audio).setVisibility(View.INVISIBLE);
+                findViewById(R.id.btn_settings).setVisibility(View.VISIBLE);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(FaceTrackerActivity.this);
+                builder.setTitle("Audio captured")
+                        .setMessage("Recorded audio file saved in " + RECORDED_AUDIO_FILE)
+                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // Continue with delete operation
+                            }
+                        })
+                        .show();
+            }
+        });
 
         FloatingActionButton settingsButton = findViewById(R.id.btn_settings);
         settingsButton.setOnClickListener(new View.OnClickListener() {
@@ -145,21 +173,25 @@ public final class FaceTrackerActivity extends AppCompatActivity {
             }
         });
 
-        FloatingActionButton stopAudioButton = findViewById(R.id.btn_stop_audio);
-        findViewById(R.id.btn_stop_audio).setVisibility(View.INVISIBLE);
-
-        stopAudioButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                stopRecording();
-                findViewById(R.id.btn_stop_audio).setVisibility(View.INVISIBLE);
-                isRecording = false;
-
-            }
-        });
 
         //Initial state of detection
-        changeToNoFace();
+        //changeToNoFace();
+    }
+
+    public static boolean hasPermissions(Context context, String[] permissions) {
+        if (context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public static boolean hasPermissionRecord(Context context) {
+        return ActivityCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 
     private void refreshCameraSettings(Context context) {
@@ -188,37 +220,6 @@ public final class FaceTrackerActivity extends AppCompatActivity {
 
     }
 
-    /**
-     * Handles the requesting of the camera permission.  This includes
-     * showing a "Snackbar" message of why the permission is needed then
-     * sending the request.
-     */
-    private void requestCameraPermission() {
-        Log.w(TAG, "Camera permission is not granted. Requesting permission");
-
-        final String[] permissions = new String[]{Manifest.permission.CAMERA};
-
-        if (!ActivityCompat.shouldShowRequestPermissionRationale(this,
-                Manifest.permission.CAMERA)) {
-            ActivityCompat.requestPermissions(this, permissions, RC_HANDLE_CAMERA_PERM);
-            return;
-        }
-
-        final Activity thisActivity = this;
-
-        View.OnClickListener listener = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ActivityCompat.requestPermissions(thisActivity, permissions,
-                        RC_HANDLE_CAMERA_PERM);
-            }
-        };
-
-        Snackbar.make(mGraphicOverlay, R.string.permission_camera_rationale,
-                Snackbar.LENGTH_INDEFINITE)
-                .setAction(R.string.ok, listener)
-                .show();
-    }
 
     /**
      * Creates and starts the camera.  Note that this uses a higher resolution in comparison
@@ -238,14 +239,6 @@ public final class FaceTrackerActivity extends AppCompatActivity {
                         .build());
 
         if (!detector.isOperational()) {
-            // Note: The first time that an app using face API is installed on a device, GMS will
-            // download a native library to the device in order to do detection.  Usually this
-            // completes before the app is run for the first time.  But if that download has not yet
-            // completed, then the above call will not detect any faces.
-            //
-            // isOperational() can be used to check if the required native library is currently
-            // available.  The detector will automatically become operational once the library
-            // download completes on device.
             Log.w(TAG, "Face detector dependencies are not yet available.");
         }
 
@@ -312,7 +305,9 @@ public final class FaceTrackerActivity extends AppCompatActivity {
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (requestCode != RC_HANDLE_CAMERA_PERM) {
+
+
+        if (requestCode != PERMISSION_ALL) {
             Log.d(TAG, "Got unexpected permission result: " + requestCode);
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
             return;
@@ -320,7 +315,6 @@ public final class FaceTrackerActivity extends AppCompatActivity {
 
         if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "Camera permission granted - initialize the camera source");
-            // we have permission, so create the camerasource
             createCameraSource();
             return;
         }
@@ -335,7 +329,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         };
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Sleepy student")
+        builder.setTitle("We are sorry")
                 .setMessage(R.string.no_camera_permission)
                 .setPositiveButton(R.string.ok, listener)
                 .show();
@@ -414,7 +408,8 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         drowsyStatus.setTextColor(ContextCompat.getColor(getBaseContext(), R.color.colorGray));
         drowsyIcon.setImageResource(R.drawable.ic_face_dis_light);
         drowsyIcon.setColorFilter(ContextCompat.getColor(getBaseContext(), R.color.colorGray));
-        toplayout.setForeground(null);
+
+        clearTopLayout();
     }
 
     //Shows status when face is detected
@@ -423,7 +418,8 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         drowsyStatus.setTextColor(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
         drowsyIcon.setImageResource(R.drawable.ic_face_smile_light);
         drowsyIcon.setColorFilter(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
-        toplayout.setForeground(null);
+
+        clearTopLayout();
     }
 
     //Shows status when drowsiness is detected
@@ -435,9 +431,9 @@ public final class FaceTrackerActivity extends AppCompatActivity {
 
 
         SharedPreferences sharedPref = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        boolean vibrating = sharedPref.getBoolean
+        boolean switchVibrating = sharedPref.getBoolean
                 ("switch_vibrating", false);
-        if (vibrating) {
+        if (switchVibrating) {
             Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
             // Vibrate for 500 milliseconds
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
@@ -448,45 +444,82 @@ public final class FaceTrackerActivity extends AppCompatActivity {
             }
         }
 
-        Log.i("runUIThread", "Start flickering");
+        boolean switchFlickering = sharedPref.getBoolean
+                ("switch_flickering", false);
 
-        //iswake=false;
+        if (switchFlickering) {
 
-        int randomnumber = new Random().nextInt(3) + 1;
-        int c = R.color.colorRed;
-        if (randomnumber == 1) {
-            c = R.color.colorGreen;
-        } else if (randomnumber == 2) {
-            c = R.color.colorWhite;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    int randomnumber = new Random().nextInt(3) + 1;
+                    int c = R.color.colorRed;
+                    if (randomnumber == 1) {
+                        c = R.color.colorGreen;
+                    } else if (randomnumber == 2) {
+                        c = R.color.colorWhite;
+                    }
+                    findViewById(R.id.topLayout).setForeground(new ColorDrawable(ContextCompat.getColor(getBaseContext(), c)));
+                }
+            });
+
+
         }
-        toplayout.setForeground(new ColorDrawable(ContextCompat.getColor(getBaseContext(), c)));
+
 
     }
 
     //Shows status when sleeping is detected
     public void changeToSleeping() {
+        SharedPreferences sharedPref = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        boolean switchRecording = sharedPref.getBoolean
+                ("switch_recording", false);
+
+        if (switchRecording && hasPermissionRecord(this)) {
+
+            showRecordingStatus();
+
+            if (!isRecording) {
+                isRecording = true;
+                startRecording();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                findViewById(R.id.btn_stop_audio).setVisibility(View.VISIBLE);
+                                findViewById(R.id.btn_settings).setVisibility(View.INVISIBLE);
+                            }
+                        });
+                    }
+                }).start();
+            }
+
+        } else {
+            drowsyStatus.setText("Sleep well");
+            drowsyStatus.setTextColor(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
+            drowsyIcon.setImageResource(R.drawable.ic_face_neutral_light);
+            drowsyIcon.setColorFilter(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
+        }
+
+        clearTopLayout();
+    }
+
+    private void showRecordingStatus() {
         drowsyStatus.setText("Recording");
         drowsyStatus.setTextColor(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
         drowsyIcon.setImageResource(R.drawable.ic_mic_light);
         drowsyIcon.setColorFilter(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
-        toplayout.setForeground(null);
-        //add record here
-        if (isRecording == false) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            findViewById(R.id.btn_stop_audio).setVisibility(View.VISIBLE);
-                        }
-                    });
-                }
-            }).start();
+    }
 
-            startRecording();
-            isRecording = true;
-        }
+    private void clearTopLayout() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                findViewById(R.id.topLayout).setForeground(null);
+            }
+        });
     }
 
     /**
@@ -518,9 +551,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
             mOverlay.add(mFaceGraphic);
             mFaceGraphic.updateFace(face);
 
-
             if (face.getIsLeftEyeOpenProbability() > EYE_CLOSENESS_THRESHOLD || face.getIsRightEyeOpenProbability() > EYE_CLOSENESS_THRESHOLD) {
-
 
                 if (CURRENT_DROWSINESS_STATUS) {
                     NORMAL_BEGINS_AT = System.currentTimeMillis();
@@ -537,13 +568,15 @@ public final class FaceTrackerActivity extends AppCompatActivity {
                 CURRENT_DROWSINESS_STATUS = true;
             }
 
-            if (isSleeping()) {
-                changeToSleeping();
-            } else {
-                if (isDrowsy()) {
-                    changeToWarning();
+            if (!isRecording) {
+                if (isSleeping()) {
+                    changeToSleeping();
                 } else {
-                    changeToTrackingFace();
+                    if (isDrowsy()) {
+                        changeToWarning();
+                    } else {
+                        changeToTrackingFace();
+                    }
                 }
             }
 
@@ -558,7 +591,12 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         @Override
         public void onMissing(FaceDetector.Detections<Face> detectionResults) {
             mOverlay.remove(mFaceGraphic);
-            changeToNoFace();
+
+            if (!isRecording) {
+                changeToNoFace();
+            }
+            CURRENT_DROWSINESS_STATUS = false;
+            SLEEPING_BEGINS_AT = System.currentTimeMillis();
         }
 
 
@@ -571,37 +609,31 @@ public final class FaceTrackerActivity extends AppCompatActivity {
             mOverlay.remove(mFaceGraphic);
         }
 
-
     }
 
     private void startRecording() {
-        Log.i("Audio", "audiorecording start");
+        Log.i("Audio", "Recording start");
         long now = System.currentTimeMillis();
         Date date = new Date(now);
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy년MM월dd일HH시mm분ss초");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
         String getTime = sdf.format(date);
-        String fileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + getTime + ".3gp";
 
-        Log.i("Audio", "audiorecording try filename : " + fileName);
-        /*
-        Thread recordingThread =null;
+        String externalStorage = Environment.getExternalStorageDirectory().getAbsolutePath();
 
-        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, 8000,AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,1024*2);
-        recorder.startRecording();
-        isRecording = true;
-        recordingThread = new Thread(new Runnable() {
-            public void run() {
-                writeAudioDataToFile();
-            }
-        }, "AudioRecorder Thread");
-        recordingThread.start();
-        */
+        File f = new File(externalStorage, "recorded_audio");
+        if (!f.exists()) {
+            f.mkdirs();
+        }
+
+        RECORDED_AUDIO_FILE = externalStorage + "/recorded_audio/" + getTime + ".3gp";
+
+        Log.i("Audio", "Filename : " + RECORDED_AUDIO_FILE);
 
         recorder = new MediaRecorder();
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        recorder.setOutputFile(fileName);
+        recorder.setOutputFile(RECORDED_AUDIO_FILE);
         recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
         try {
@@ -620,7 +652,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
             recorder.stop();
             recorder.release();
             recorder = null;
-            Log.i("Audio", "stoprecording done");
+            Log.i("Audio", "Recording done");
         }
 
     }
