@@ -138,10 +138,12 @@ public final class FaceTrackerActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
         }
 
+        isRecording = false;
+
         createCameraSource();
         refreshCameraSettings(getBaseContext());
 
-        isRecording = false;
+
         FloatingActionButton stopAudioButton = findViewById(R.id.btn_stop_audio);
         findViewById(R.id.btn_stop_audio).setVisibility(View.INVISIBLE);
         stopAudioButton.setOnClickListener(new View.OnClickListener() {
