@@ -156,7 +156,7 @@ public final class FaceTrackerActivity extends AppCompatActivity {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(FaceTrackerActivity.this);
                 builder.setTitle("Audio captured")
-                        .setMessage("Recorded audio file saved in " + RECORDED_AUDIO_FILE)
+                        .setMessage("Recorded audio file stored in " + RECORDED_AUDIO_FILE)
                         .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 // Continue with delete operation
