@@ -57,6 +57,7 @@ import com.google.android.gms.vision.MultiProcessor;
 import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
+import com.google.android.gms.vision.face.LargestFaceFocusingProcessor;
 
 import java.io.File;
 import java.io.IOException;
@@ -237,8 +238,9 @@ public final class FaceTrackerActivity extends AppCompatActivity {
                 .build();
 
         detector.setProcessor(
-                new MultiProcessor.Builder<>(new GraphicFaceTrackerFactory())
-                        .build());
+                new LargestFaceFocusingProcessor(
+                        detector,
+                        new GraphicFaceTracker(mGraphicOverlay)));
 
         if (!detector.isOperational()) {
             Log.w(TAG, "Face detector dependencies are not yet available.");
@@ -369,19 +371,20 @@ public final class FaceTrackerActivity extends AppCompatActivity {
     }
 
     //==============================================================================================
-    // Graphic Face Tracker
+    // Graphic Face Tracker:
     //==============================================================================================
 
     /**
      * Factory for creating a face tracker to be associated with a new face.  The multiprocessor
      * uses this factory to create face trackers as needed -- one for each individual.
      */
+    /*
     private class GraphicFaceTrackerFactory implements MultiProcessor.Factory<Face> {
         @Override
         public Tracker<Face> create(Face face) {
             return new GraphicFaceTracker(mGraphicOverlay);
         }
-    }
+    }*/
 
     //Check current drowsy status
     public static boolean isDrowsy() {
@@ -454,11 +457,11 @@ public final class FaceTrackerActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    int randomnumber = new Random().nextInt(3) + 1;
+                    int random_number = new Random().nextInt(3) + 1;
                     int c = R.color.colorRed;
-                    if (randomnumber == 1) {
+                    if (random_number == 1) {
                         c = R.color.colorGreen;
-                    } else if (randomnumber == 2) {
+                    } else if (random_number == 2) {
                         c = R.color.colorWhite;
                     }
                     findViewById(R.id.topLayout).setForeground(new ColorDrawable(ContextCompat.getColor(getBaseContext(), c)));
