@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
@@ -19,9 +19,7 @@ public class scri : MonoBehaviour {
     {
 
         float angle = transform.eulerAngles.z;
-        //timerText.text = angle.ToString (); 
-        // z for left right
-        // Y is y itself
+
         Face_angle();
 
         Check_Sleeping();
@@ -59,14 +57,7 @@ public class scri : MonoBehaviour {
             sleeping_energy++;
 
 
-
-            // x back
-            /* Game
-            GameObject go = GameObject.Find("squirrel@stand");
-            move_game2 other = (move_game2)go.GetComponent(typeof(move_game2));
-            other.rotate_left();
-            */
-
+        
         }
         else if (300 < transform.eulerAngles.z && transform.eulerAngles.z < 350)
         {
@@ -79,12 +70,6 @@ public class scri : MonoBehaviour {
 
 
 
-            //x front
-            /* Game
-            GameObject go = GameObject.Find("squirrel@stand");
-            move_game2 other = (move_game2)go.GetComponent(typeof(move_game2));
-            other.rotate_right();
-            */
 
 
         }
@@ -99,14 +84,6 @@ public class scri : MonoBehaviour {
 
 
 
-            // x back
-            /* Game
-            GameObject go = GameObject.Find("squirrel@stand");
-            move_game2 other = (move_game2)go.GetComponent(typeof(move_game2));
-            other.rotate_left();
-            */
-
-
 
         }
         else if (300 < transform.eulerAngles.x && transform.eulerAngles.x < 340)
@@ -119,13 +96,6 @@ public class scri : MonoBehaviour {
             
 
 
-
-            //x front
-            /* Game
-            GameObject go = GameObject.Find("squirrel@stand");
-            move_game2 other = (move_game2)go.GetComponent(typeof(move_game2));
-            other.rotate_right();
-            */
 
 
         }
